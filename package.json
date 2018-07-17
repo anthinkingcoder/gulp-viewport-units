@@ -1,0 +1,14 @@
+{
+  "name": "gulp-viewport-units",
+  "version": "1.0.0",
+  "dependencies": {
+    "cssom": "^0.3.4",
+    "plugin-error": "^1.0.1",
+    "safe-buffer": "^5.1.2",
+    "through2": "^2.0.3"
+  },
+  "devDependencies": {
+    "del": "^3.0.0",
+    "gulp": "^3.9.1"
+  }
+}

@@ -1,0 +1,16 @@
+html {
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    height: 100%;
+}
+
+.demo {
+    width: 20vw;
+    height: 20vw;
+}
+
+.demo, .demo1 {
+    background-color: red;
+}
+

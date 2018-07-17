@@ -8,9 +8,15 @@ html {
 .demo {
     width: 20vw;
     height: 20vw;
+    padding: calc(20vw - 100px);
 }
 
-.demo, .demo1 {
+.notSelector {
+    width: 20vw;
+}
+
+.demo, .demo1,.notSelector {
     background-color: red;
+    margin: 10vw;
 }
 

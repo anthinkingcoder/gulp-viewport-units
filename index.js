@@ -6,6 +6,11 @@ var Buffer = require('safe-buffer').Buffer;
 var through = require('through2');
 
 
+var defaultViewportUnits = ['vw', 'vh', 'vmax', 'vmin'];
+var viewportPropName = 'content';
+var viewportUnitPrefix = 'viewport-units-buggyfill';
+
+
 function regeneratorCssText(styleName, styleDeclarations) {
     var cssText = styleName + ' {\n', length = styleDeclarations.length;
     for (var i = 0; i < length; i++) {
@@ -28,10 +33,40 @@ function addStyleProp(style, propName, propValue) {
     style[propName] = propValue;
 }
 
-var viewportUnits = /\d(vw|vh|vmax|vmin)\b/;
-var viewportPropName = 'content';
-var viewportUnitPrefix = 'viewport-units-buggyfill';
-var viewportUnitsBuggyfill = function (data, options, settings) {
+function isArray(obj) {
+    return Object.prototype.toString.call(obj) === '[object Array]';
+}
+
+function getRepxViewportUnit(supportViewports) {
+    supportViewports = defaultViewportUnits.filter(function (unit) {
+        return supportViewports.some(function (t) {
+            return t === unit;
+        })
+    });
+    return new RegExp("\\d(" + supportViewports.join("|") + ")\\b");
+}
+
+function extend(source, target) {
+    var obj = {}, name;
+    for (name in source) {
+        if (target[name]) {
+            obj[name] = target[name];
+        } else {
+            obj[name] = source[name];
+        }
+    }
+    return obj;
+}
+
+
+var viewportUnitsBuggyfill = function (options) {
+    var defaultOptions = {
+        onlyCalc: false,
+        viewportUnits: defaultViewportUnits,
+        selectorBlackList: []
+    }, opts, repxViewportUnits;
+    opts = extend(defaultOptions, options);
+    repxViewportUnits = getRepxViewportUnit(opts.viewportUnits);
     return through.obj(function (file, enc, cb) {
         var stylesheet;
         if (file.isNull()) {
@@ -59,7 +94,19 @@ var viewportUnitsBuggyfill = function (data, options, settings) {
                 for (var i = 0; i < styles.length; i++) {
                     name = styles[i];
                     value = styles[name];
-                    if (viewportUnits.test(value)) {
+                    //filter black
+                    if(opts.selectorBlackList) {
+                        var isBlack = opts.selectorBlackList.some(function (black) {
+                            return selectorText.indexOf(black) !== -1;
+                        });
+                        if (isBlack) {
+                            continue;
+                        }
+                    }
+                    if (opts.onlyCalc && value.indexOf('calc') === -1) {
+                        continue;
+                    }
+                    if (repxViewportUnits.test(value)) {
                         hacks.push(name + ':' + value);
                     }
                 }

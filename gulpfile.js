@@ -8,6 +8,6 @@ gulp.task('clean', function (cb) {
 
 gulp.task('css', ['clean'], function (cb) {
     gulp.src('example/**/*.css')
-        .pipe(viewportUnits())
+        .pipe(viewportUnits({'onlyCalc': false,selectorBlackList:['.notSelector']}))
         .pipe(gulp.dest('example/dist'));
 });

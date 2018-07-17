@@ -6,7 +6,6 @@ gulp.task('clean', function (cb) {
     return del(['example/dist'], cb);
 });
 
-
 gulp.task('css', ['clean'], function (cb) {
     gulp.src('example/**/*.css')
         .pipe(viewportUnits())

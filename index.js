@@ -40,6 +40,10 @@ function hasContent(styles) {
     return styles['content'];
 }
 
+function isEmpty(array) {
+    return !array || array.length === 0;
+}
+
 function addStyleProp(style, propName, propValue) {
     style.length = style.length || 0;
     style[style.length] = propName;
@@ -72,6 +76,33 @@ function extend(source, target) {
     return obj;
 }
 
+function filterBlackList(selectorText, blackList) {
+    var selectorArray, hacksSelectorArray = [], allHack;
+    selectorArray = selectorText.split(',');
+    selectorArray.forEach(function (selector) {
+        var singerSelector = selector;
+        var singerSelectorArray = selector.split(' ');
+        //select last selector such as (.a .b),only select .b
+        if (singerSelectorArray.length > 1) {
+            singerSelector = singerSelectorArray[singerSelectorArray.length - 1];
+        }
+        var isHack = blackList.every(function (black) {
+            return singerSelector !== black;
+        });
+        if (isHack) {
+            hacksSelectorArray.push(selector);
+        }
+    });
+
+    function isAllHack() {
+        return hacksSelectorArray.length === selectorArray.length;
+    }
+    allHack = isAllHack();
+    return {
+        hacksSelectorArray: hacksSelectorArray,
+        allHack: allHack
+    }
+}
 
 
 var viewportUnitsBuggyfill = function (options) {
@@ -107,41 +138,18 @@ var viewportUnitsBuggyfill = function (options) {
                 styles = rule.style,
                 selectorText = rule.selectorText,
                 propValue,
-                hacksSelectorArray = [],
-                allHack = false;
+                hacksSelectorArray,
+                allHack = true;
             if (styles && !hasContent(styles)) {
+                if (!isEmpty(opts.selectorBlackList)) {
+                    var o = filterBlackList(selectorText, opts.selectorBlackList);
+                    hacksSelectorArray = o.hacksSelectorArray;
+                    allHack = o.allHack;
+                }
                 for (var i = 0; i < styles.length; i++) {
                     name = styles[i];
                     value = styles[name];
-                    //filter blacklist
-                    if (opts.selectorBlackList) {
-                        var selectorArray = selectorText.split(',');
-                        if (selectorArray.length > 0) {
-                            hacksSelectorArray = [];
-                            opts.selectorBlackList.forEach(function (black) {
-                                selectorArray.forEach(function (selector) {
-                                    var singerSelector = selector;
-                                    var singerSelectorArray = selector.split(' ');
-                                    if (singerSelectorArray.length > 1) {
-                                        singerSelector = singerSelectorArray[singerSelectorArray.length - 1];
-                                    }
-                                    if (singerSelector.indexOf(black) === -1) {
-                                        hacksSelectorArray.push(selector);
-                                    }
-                                })
-                            });
-                            if (hacksSelectorArray.length === selectorArray.length) {
-                                allHack = true;
-                            }
-                        } else {
-                            var isBlack = opts.selectorBlackList.some(function (black) {
-                                return selectorText.indexOf(black) !== -1;
-                            });
-                            if (isBlack) {
-                                continue;
-                            }
-                        }
-                    }
+
                     if (opts.onlyCalc && value.indexOf('calc') === -1) {
                         continue;
                     }

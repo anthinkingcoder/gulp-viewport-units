@@ -73,13 +73,15 @@ function extend(source, target) {
 }
 
 
+
 var viewportUnitsBuggyfill = function (options) {
+
     var defaultOptions = {
         onlyCalc: false,
         viewportUnits: defaultViewportUnits,
         selectorBlackList: []
-    }, opts, repxViewportUnits;
-    opts = extend(defaultOptions, options);
+    }, opts = options || {}, repxViewportUnits;
+    opts = extend(defaultOptions, opts);
     repxViewportUnits = getRepxViewportUnit(opts.viewportUnits);
     return through.obj(function (file, enc, cb) {
         var stylesheet;

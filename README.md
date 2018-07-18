@@ -85,7 +85,7 @@ examples:
  var defalutOptions = {
     onlyCalc: false,                             //if true,only progress calc()
     viewportUnits: ['vw', 'vh', 'vmax', 'vmin'], //viewport units array what viewport units can be progress
-    selectorBlackList: []                        //not be progress selector array
+    selectorBlackList: []                        //An Selector array that will not be processed
  }
 ```
 

@@ -11,6 +11,19 @@ var viewportPropName = 'content';
 var viewportUnitPrefix = 'viewport-units-buggyfill';
 
 
+function generatorStyleDeclarations(props) {
+    var prop, index = 0, styleDeclarations = {}, length = 0;
+    for (prop in props) {
+        styleDeclarations[index] = prop;
+        styleDeclarations[prop] = props[prop];
+        index++;
+        length++;
+    }
+    styleDeclarations.length = length;
+    return styleDeclarations;
+}
+
+
 function regeneratorCssText(styleName, styleDeclarations) {
     var cssText = styleName + ' {\n', length = styleDeclarations.length;
     for (var i = 0; i < length; i++) {
@@ -28,6 +41,7 @@ function hasContent(styles) {
 }
 
 function addStyleProp(style, propName, propValue) {
+    style.length = style.length || 0;
     style[style.length] = propName;
     style.length++;
     style[propName] = propValue;
@@ -89,18 +103,41 @@ var viewportUnitsBuggyfill = function (options) {
             var value,
                 name, hacks = [],
                 styles = rule.style,
-                selectorText = rule.selectorText, propValue;
+                selectorText = rule.selectorText,
+                propValue,
+                hacksSelectorArray = [],
+                allHack = false;
             if (styles && !hasContent(styles)) {
                 for (var i = 0; i < styles.length; i++) {
                     name = styles[i];
                     value = styles[name];
-                    //filter black
-                    if(opts.selectorBlackList) {
-                        var isBlack = opts.selectorBlackList.some(function (black) {
-                            return selectorText.indexOf(black) !== -1;
-                        });
-                        if (isBlack) {
-                            continue;
+                    //filter blacklist
+                    if (opts.selectorBlackList) {
+                        var selectorArray = selectorText.split(',');
+                        if (selectorArray.length > 0) {
+                            hacksSelectorArray = [];
+                            opts.selectorBlackList.forEach(function (black) {
+                                selectorArray.forEach(function (selector) {
+                                    var singerSelector = selector;
+                                    var singerSelectorArray = selector.split(' ');
+                                    if (singerSelectorArray.length > 1) {
+                                        singerSelector = singerSelectorArray[singerSelectorArray.length - 1];
+                                    }
+                                    if (singerSelector.indexOf(black) === -1) {
+                                        hacksSelectorArray.push(selector);
+                                    }
+                                })
+                            });
+                            if (hacksSelectorArray.length === selectorArray.length) {
+                                allHack = true;
+                            }
+                        } else {
+                            var isBlack = opts.selectorBlackList.some(function (black) {
+                                return selectorText.indexOf(black) !== -1;
+                            });
+                            if (isBlack) {
+                                continue;
+                            }
                         }
                     }
                     if (opts.onlyCalc && value.indexOf('calc') === -1) {
@@ -114,10 +151,21 @@ var viewportUnitsBuggyfill = function (options) {
                 if (hacks.length > 0) {
                     hacks.unshift(viewportUnitPrefix);
                     propValue = '"' + hacks.join(';') + '"';
-                    addStyleProp(styles, viewportPropName, propValue);
+                    if (!allHack) {
+                        if (hacksSelectorArray.length > 0) {
+                            //Save does not need to be hack styles
+                            cssTextArray.push(regeneratorCssText(selectorText, styles));
+                            //change style to whitelist style
+                            selectorText = hacksSelectorArray.join(',');
+                            styles = {};
+                            addStyleProp(styles, viewportPropName, propValue);
+                        }
+                    } else {
+                        addStyleProp(styles, viewportPropName, propValue);
+                    }
                 }
+                cssTextArray.push(regeneratorCssText(selectorText, styles));
             }
-            cssTextArray.push(regeneratorCssText(selectorText, styles));
         });
         file.contents = new Buffer(cssTextArray.join('\n'));
         this.push(file);

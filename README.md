@@ -42,25 +42,42 @@ You can filter out selectors that do not need to be processed,like blacklist.
 ```javascript
   gulp.task('css', function () {
       gulp.src('./css/**/*.css')
-          .pipe(viewportUnits({selectorBlackList:['.blacklist-1','html']}))
+          .pipe(viewportUnits({selectorBlackList:['.notSelector']}))
           .pipe(gulp.dest('./css/dist'));
   });
 ```
-
-before transform:
+examples:
 ```css
-  .demo {
+  /*before transform*/
+  
+  .notSelector {
       width: 20vw;
-      height: 20vw;
   }
-```
-after transform:
-```css
-  .demo {
+  .demo,.demo1 .notSelector{
+      background-color: red;
+      margin: 10vw;
+  }
+  
+  .notSelector .demo1 {
+      padding: 10vw;
+  }
+  /*after transform*/
+  
+  .notSelector {
       width: 20vw;
-      height: 20vw;
-      content: "viewport-units-buggyfill;width:20vw;height:20vw";
   }
+  .demo, .demo1 .notSelector {
+      background-color: red;
+      margin: 10vw;
+  }
+  .demo {
+      content: "viewport-units-buggyfill;margin:10vw";
+  }
+  .notSelector .demo1 {
+      padding: 10vw;
+      content: "viewport-units-buggyfill;padding:10vw";
+  }
+  
 ```
 
 ## options

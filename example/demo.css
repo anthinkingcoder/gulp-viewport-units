@@ -11,12 +11,24 @@ html {
     padding: calc(20vw - 100px);
 }
 
+/*.notSelector {*/
+    /*width: 20vw;*/
+/*}*/
+
+/*.notSelector .demo1 {*/
+    /*background-color: red;*/
+    /*margin: 10vw;*/
+/*}*/
+
 .notSelector {
     width: 20vw;
 }
-
-.demo, .de .demo1 .notSelector      {
+.demo, .demo1 .notSelector{
     background-color: red;
     margin: 10vw;
+}
+
+.notSelector .demo1 {
+    padding: 10vw;
 }
 
